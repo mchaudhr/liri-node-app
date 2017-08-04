@@ -16,7 +16,7 @@ var operation = process.argv[2];
       console.log(error);
   };
       for (var i=0; i < tweets.length; i++) {
-      console.log(`Tweet Time:     `+tweets[i].created_at);
+      console.log(`\nTweet Time:     `+tweets[i].created_at);
       console.log(`\nMy Tweet:     `+ tweets[i].text);
       };
   });
@@ -63,7 +63,7 @@ if (operation === "movie-this") {
 // Node-Spotify-API
 if (operation === "spotify-this-song") {
   
-  var spotify = new Spotify(key.spotifyKeys);
+var spotify = new Spotify(key.spotifyKeys);
 var argument = process.argv;
 var argvArray = [];
 for (var i=3; i < argument.length; i++) {
@@ -95,18 +95,106 @@ spotify.search({ type: 'track', query: song }, function(err, data) {
     });
   }
 };
+
+
 // do-what-it-says
+
 if (operation === "do-what-it-says") {
   
     fs.readFile("random.txt", "utf8", function(error, data) {
+
     if (error) {
       return console.log(error);
     }
     
     var argvArray = data.split(",");
-    var command = argvArray.join(" ");
-    console.log(data);
-    console.log(argvArray);
-    console.log(command);
-  });
+
+    if (argvArray[0] === "spotify-this-song") {
+  
+        var spotify = new Spotify(key.spotifyKeys);
+        
+        var song = argvArray[1];
+
+        if (song !== undefined) {
+        
+        spotify.search({ type: 'track', query: song }, function(err, data) {
+            
+            if (err) {
+            return console.log('Error occurred: ' + err);
+            }
+        console.log("Artist(s):                 " + data.tracks.items[0].artists[0].name);
+        console.log("The song's name:           " + data.tracks.items[0].name);
+        console.log("The album's name:          " + data.tracks.items[0].album.name);
+        console.log("link of the song:          " + data.tracks.items[0].external_urls.spotify);
+            });
+        } else {
+            spotify.search({ type: 'track', query: 'The Sign' }, function(err, data) {
+            
+            if (err) {
+            return console.log('Error occurred: ' + err);
+            }
+        console.log("Artist(s):                 " + data.tracks.items[0].artists[0].name);
+        console.log("The song's name:           " + data.tracks.items[0].name);
+        console.log("The album's name:          " + data.tracks.items[0].album.name);
+        console.log("link of the song:          " + data.tracks.items[0].external_urls.spotify);
+            });
+        }
+    }
+
+  if (argvArray[0] === "movie-this") {
+
+   
+    var title = argvArray[1];
+
+    if (title !== undefined) {
+      
+      request(`http://www.omdbapi.com/?t=${title}&y=&plot=short&apikey=40e9cece`, function(error, response, body) {
+      
+      if (!error && response.statusCode === 200) {
+        console.log("Title:                     " + JSON.parse(body).Title);
+        console.log("Language:                  " + JSON.parse(body).Language);
+        console.log("Year:                      " + JSON.parse(body).Year);
+        console.log("Country:                   " + JSON.parse(body).Country);
+        console.log("IMDB Rating rating:        " + JSON.parse(body).imdbRating);
+        console.log("Rotten Tomatoes Rating:    " + JSON.parse(body).Ratings[1].Value);
+        console.log("Actors:                    " + JSON.parse(body).Actors);
+        console.log("Plot:                      " + JSON.parse(body).Plot);
+        }
+      });
+    } else {
+      request(`http://www.omdbapi.com/?t=Mr.Nobody&y=&plot=short&apikey=40e9cece`, function(error, response, body) {
+      
+      if (!error && response.statusCode === 200) {
+        console.log("Title:                     " + JSON.parse(body).Title);
+        console.log("Language:                  " + JSON.parse(body).Language);
+        console.log("Year:                      " + JSON.parse(body).Year);
+        console.log("Country:                   " + JSON.parse(body).Country);
+        console.log("IMDB Rating rating:        " + JSON.parse(body).imdbRating);
+        console.log("Rotten Tomatoes Rating:    " + JSON.parse(body).Ratings[1].Value);
+        console.log("Actors:                    " + JSON.parse(body).Actors);
+        console.log("Plot:                      " + JSON.parse(body).Plot);
+        }
+      });
+    }
+  }
+
+
+  if (argvArray[0] === "my-tweets") {
+
+    var client = new Twitter(key.twitterKeys);
+    var params = {screen_name: 'chaudhrymamoona'};
+    
+    client.get('statuses/user_timeline', params, function(error, tweets, response) {
+      if (error) {
+        console.log(error);
+    };
+
+        for (var i=0; i < tweets.length; i++) {
+        console.log(tweets[i].created_at);
+        console.log(tweets[i].text);
+        };
+    });
+  }
+});
+
 }
